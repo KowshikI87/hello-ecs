@@ -1,19 +1,18 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecsp from 'aws-cdk-lib/aws-ecs-patterns';
 
-export class HelloEcsStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+export class HelloEcsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'HelloEcsQueue', {
-      visibilityTimeout: Duration.seconds(300)
+    new ecsp.ApplicationLoadBalancedFargateService(this, 'MyWebServer', {
+      //taskImageOptions creates new task definitions
+      taskImageOptions: {
+        image: ecs.ContainerImage.fromRegistry('amazon/amazon-ecs-sample'),
+      },
+      publicLoadBalancer: true //publicly accessible loadbalancer
     });
-
-    const topic = new sns.Topic(this, 'HelloEcsTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
   }
 }
